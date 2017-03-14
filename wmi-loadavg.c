@@ -1,11 +1,20 @@
+#include <stdio.h>
+
 #define _WIN32_DCOM
 #include <iostream>
 using namespace std;
+
+/* comip.h uses MSVCRT-style _(m|)alloca */
+#include <alloca.h>
+#define _alloca alloca
+#define _malloca alloca
+#define _freea(x)
+
 #include <comdef.h>
-#include <Wbemidl.h>
+#include <wbemidl.h>
 
 //
-// x86_64-w64-mingw32-g++ -g -O0 wmi-loadavg.c -lole32 -loleaut32 -lwbemuuid
+// g++ -g -O0 wmi-loadavg.c -lole32 -loleaut32 -lwbemuuid -o wmi-loadavg
 //
 // See MSDN article "Accessing WMI Preinstalled Performance Classes"
 //
@@ -81,8 +90,8 @@ int main(int argc, char **argv)
          NULL,                    // User name. NULL = current user
          NULL,                    // User password. NULL = current
          0,                       // Locale. NULL indicates current
-         NULL,                    // Security flags.
-         0,                       // Authority (for example, Kerberos)
+         0,                       // Security flags.
+         NULL,                    // Authority (for example, Kerberos)
          0,                       // Context object
          &pNameSpace              // pointer to IWbemServices proxy
          );
@@ -169,7 +178,7 @@ int main(int argc, char **argv)
     pObj->Release();
 
     // Get a property handle for the ProcessorQueueLength property.
-    long lProcessorQueueLengthHandle = 0;
+    LONG lProcessorQueueLengthHandle = 0;
     DWORD dwProcessorQueueLength = 0;
     CIMTYPE variant;
 
@@ -182,9 +191,7 @@ int main(int argc, char **argv)
     {
         pRefresher->Refresh( 0L );
         pAcc->ReadDWORD( lProcessorQueueLengthHandle, &dwProcessorQueueLength );
-        printf( "Processor Queue Length  is %lu\n", dwProcessorQueueLength );
-        // Sleep for a second.
-        Sleep( 1000 );
+        printf( "Processor Queue Length is %lu\n", dwProcessorQueueLength );
     }
 
     // Clean up all the objects.
